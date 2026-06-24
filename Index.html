@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mzdová kalkulačka - Vynulovaná</title>
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: #334155; }
+        .card { max-width: 500px; margin: auto; background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full { grid-column: span 2; }
+        label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 15px; }
+        #results { margin-top: 25px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
+        .result-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .result-row span:first-child { color: #64748b; }
+        .total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; color: var(--primary); margin-top: 15px; padding-top: 10px; border-top: 2px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Mzdová kalkulačka</h2>
+    <div class="grid">
+        <div class="full"><label>Základní mzda (Kč)</label><input type="number" id="zaklad" value="0"></div>
+        <div><label>Fond (hod)</label><input type="number" id="fond" value="0"></div>
+        <div><label>PPU (Kč/hod)</label><input type="number" id="ppu" value="0" step="0.01"></div>
+        <div class="full"><label>Dovolená (hod)</label><input type="number" id="dovolena" value="0"></div>
+        <div><label>Bonus (Celkem)</label><input type="number" id="bonus" value="0"></div>
+        <div><label>Příplatek Chlad</label><input type="number" id="chlad" value="0"></div>
+        <div><label>Přesčas (hod)</label><input type="number" id="prescas" value="0"></div>
+        <div><label>Noční (hod)</label><input type="number" id="nocni" value="0"></div>
+        <div><label>Víkend (hod)</label><input type="number" id="vikend" value="0"></div>
+        <div><label>Svátek (hod)</label><input type="number" id="svatek" value="0"></div>
+    </div>
+    <button onclick="calculate()">Vypočítat mzdu</button>
+
+    <div id="results"></div>
+</div>
+
+<script>
+    function calculate() {
+        const zaklad = parseFloat(document.getElementById('zaklad').value) || 0;
+        const fond = parseFloat(document.getElementById('fond').value) || 0;
+        const ppu = parseFloat(document.getElementById('ppu').value) || 0;
+        const dov = parseFloat(document.getElementById('dovolena').value) || 0;
+        const bonusCelkem = parseFloat(document.getElementById('bonus').value) || 0;
+        const chladCelkem = parseFloat(document.getElementById('chlad').value) || 0;
+        const pre = parseFloat(document.getElementById('prescas').value) || 0;
+        const noc = parseFloat(document.getElementById('nocni').value) || 0;
+        const vik = parseFloat(document.getElementById('vikend').value) || 0;
+        const sva = parseFloat(document.getElementById('svatek').value) || 0;
+
+        // Ošetření dělení nulou
+        if (fond === 0) {
+            alert("Fond pracovní doby nesmí být 0.");
+            return;
+        }
+
+        const hodSazba = zaklad / fond;
+        const odpracovano = fond - dov;
+        
+        // Proporční výpočty
+        const bonusVyplaceny = (bonusCelkem / fond) * odpracovano;
+        const chladVyplaceny = (chladCelkem / fond) * odpracovano;
+        
+        // Složky
+        const mzdaPrace = odpracovano * hodSazba;
+        const nahradaDov = dov * ppu;
+        const mzdaPrescas = pre * hodSazba;
+        const prirPrescas = pre * ppu * 0.25;
+        const prirNoc = noc * ppu * 0.10;
+        const prirVik = vik * ppu * 0.10;
+        const prirSvatek = sva * ppu * 1.25; 
+        
+        const hrubaCelkem = mzdaPrace + nahradaDov + mzdaPrescas + prirPrescas + prirNoc + prirVik + prirSvatek + bonusVyplaceny + chladVyplaceny;
+
+        document.getElementById('results').innerHTML = `
+            <div class="result-row"><span>Základní mzda:</span> <span>${mzdaPrace.toFixed(0)} Kč</span></div>
+            <div class="result-row"><span>Náhrada za dovolenou:</span> <span>${nahradaDov.toFixed(0)} Kč</span></div>
+            <div class="result-row"><span>Bonus:</span> <span>${bonusVyplaceny.toFixed(0)} Kč</span></div>
+            <div class="result-row"><span>Příplatek za chlad:</span> <span>${chladVyplaceny.toF
